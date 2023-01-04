@@ -208,3 +208,12 @@ zstd压缩
 视频：https://www.bilibili.com/video/BV1tR4y1y7gQ/?spm_id_from=pageDriver&vd_source=1435dbab789f2dad584fcf275be722e4
 
 问题：
+
+## 5，StateBackend performance improvement with TerarkDB｜李明& 王义
+
+文档：[李明&王义StateBackend performance improvement with TerarkDB .pdf](.\核心技术\【3】李明&王义StateBackend performance improvement with TerarkDB .pdf)
+
+视频：https://www.bilibili.com/video/BV1bR4y1y72a/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
+
+问题：
+
