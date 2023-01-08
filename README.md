@@ -217,3 +217,34 @@ zstd压缩
 
 问题：
 
+## 6，Adaptive and flexible execution management for batch jobs｜朱翥
+
+文档：[朱翥 _ Adaptive Batch Job Execution.pdf](.\核心技术\【3】朱翥 _ Adaptive Batch Job Execution.pdf)
+
+视频：https://www.bilibili.com/video/BV1oP411T7ay/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
+
+问题：
+
+同源执行实例
+
+![image-20230108154945017](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230108154945017.png)
+
+![image-20230108160556936](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230108160556936.png)
+
+## 7，Flink Shuffle 3.0: Vision, Roadmap and Progress｜宋辛童
+
+文档：[宋辛童Flink Shuffle 3.0-Vision_Roadmap and Progress.pdf](.\核心技术\【2】宋辛童Flink Shuffle 3.0-Vision_Roadmap and Progress.pdf)
+
+视频：https://www.bilibili.com/video/BV1M44y1Q7mf/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+问题：
+
+![image-20230108174825872](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230108174825872.png)
+
+## 8，Flink OLAP 在字节跳动的查询优化和落地实践｜何润康
+
+文档：[何润康 Final - Flink OLAP 在字节跳动的查询优化和落地实践.pdf](.\核心技术\【3】何润康 Final - Flink OLAP 在字节跳动的查询优化和落地实践.pdf)
+
+视频：https://www.bilibili.com/video/BV1k14y1n7fs/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
+
+问题：
