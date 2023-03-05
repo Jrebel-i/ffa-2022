@@ -357,7 +357,9 @@ State Changelog 相关组件
 
 ## 10，PyFlink 最新进展解读及典型应用场景介绍｜付典
 
-文档：[付典-PyFlink 最新进展解读及典型应用场景介绍.pdf](‪.\核心技术\【5】付典-PyFlink 最新进展解读及典型应用场景介绍.pdf)
+文档：[付典-PyFlink 最新进展解读及典型应用场景介绍.pdf](.\核心技术\【5】付典-PyFlink 最新进展解读及典型应用场景介绍.pdf)
+
+[付典-PyFlink 最新进展解读及典型应用场景介绍.pdf](核心技术\【5】付典-PyFlink 最新进展解读及典型应用场景介绍.pdf)
 
 视频：https://www.bilibili.com/video/BV1c8411578K/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
 
@@ -365,7 +367,7 @@ State Changelog 相关组件
 
 ## 11，Apache Flink 1.16 功能解读｜黄兴勃
 
-文档：[‪黄兴勃-Apache Flink 1.16 功能解读.pdf](‪.‪\核心技术\【1】黄兴勃-Apache Flink 1.16 功能解读.pdf)
+文档：[黄兴勃-Apache Flink 1.16 功能解读.pdf](.\核心技术\【1】黄兴勃-Apache Flink 1.16 功能解读.pdf)
 
 视频：https://www.bilibili.com/video/BV1JK411R7ZX/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
 
@@ -375,7 +377,7 @@ State Changelog 相关组件
 
 ## 12，基于 Log 的通用增量 Checkpoint｜俞航翔
 
-文档：[‪俞航翔-基于Log的通用增量Checkpoint .pdf](‪.‪\核心技术\【1】俞航翔-基于Log的通用增量Checkpoint .pdf)
+文档：[俞航翔-基于Log的通用增量Checkpoint.pdf](.\核心技术\【1】俞航翔-基于Log的通用增量Checkpoint.pdf)
 
 视频：https://www.bilibili.com/video/BV1hD4y1v7Xi/?spm_id_from=pageDriver&vd_source=1435dbab789f2dad584fcf275be722e4
 
@@ -383,3 +385,12 @@ State Changelog 相关组件
 
 问题：
 
+Changelog Incremental Checkpoint
+
+Local Recovery
+
+
+
+**了解Fault Tolerance2.0：**
+
+![image-20230305200919076](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305200919076.png)
