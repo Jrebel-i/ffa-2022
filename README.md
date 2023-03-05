@@ -241,6 +241,8 @@ zstd压缩
 
 ![image-20230108174825872](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230108174825872.png)
 
+# ======================================================
+
 ## 8，Flink OLAP 在字节跳动的查询优化和落地实践｜何润康
 
 文档：[何润康 Final - Flink OLAP 在字节跳动的查询优化和落地实践.pdf](.\核心技术\【3】何润康 Final - Flink OLAP 在字节跳动的查询优化和落地实践.pdf)
@@ -248,3 +250,136 @@ zstd压缩
 视频：https://www.bilibili.com/video/BV1k14y1n7fs/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
 
 问题：
+
+查询优化
+
+1. Query Optimizer 优化 
+
+   （1）Plan 缓存
+
+   ![image-20230305150927446](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305150927446.png)
+
+   （2）TopN 下推
+
+   ![image-20230305151020715](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151020715.png)
+
+   （3）跨 Union All 下推
+
+   ![image-20230305151058497](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151058497.png)
+
+   （4）Join Filter 传递
+
+   ![image-20230305151126645](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151126645.png)
+
+2. Query Executor 优化
+
+   （1）问题：Classloader 问题分析
+
+   ![image-20230305151213774](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151213774.png)
+
+   解决：Classloader 复用
+
+   ![image-20230305151256358](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151256358.png)
+
+   （2）问题：Codegen 问题分析
+
+   ![image-20230305151516167](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151516167.png)
+
+   解决：Codegen 缓存优化
+
+   ![image-20230305151637142](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151637142.png)
+
+   解决：反序列化优化
+
+   ![image-20230305151925795](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151925795.png)
+
+   ![image-20230305151951779](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305151951779.png)
+
+   其他优化：Join Probe 提前输出（probe了解：https://www.jianshu.com/p/af9b169c9a36）， 内存池化， 内存使用优化
+
+   ![image-20230305152056202](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305152056202.png)
+
+稳定性治理
+
+![image-20230305152152246](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305152152246.png)
+
+Java ClassLoader：https://blog.csdn.net/a745233700/article/details/89245847
+
+向量化引擎：https://zhuanlan.zhihu.com/p/449878214
+
+物化视图：
+
+## 9，基于 Log 的通用增量 Checkpoint 在美团的进展｜王非凡
+
+文档：[王非凡基于Log的通用增量Checkpoint在美团的进展.pdf](.\核心技术\【4】王非凡基于Log的通用增量Checkpoint在美团的进展.pdf)
+
+视频：https://www.bilibili.com/video/BV1h8411j75R/?spm_id_from=pageDriver&vd_source=1435dbab789f2dad584fcf275be722e4
+
+问题：
+
+Log based Checkpoint 制作方式
+
+![image-20230305172344695](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305172344695.png)
+
+**Log based Checkpoint 优势**
+
+更轻量的 recovery ：checkpoint 间隔越短，recovery 时需要回放的数据 就越少。 
+
+更低的事务化 sink 端到端延迟：事务化 sink 在 checkpoint 时进行  commit，更快的 checkpoint 意味着可以进行更频繁的 commit。 
+
+更可预测的 checkpoint 间隔：不需要等 DB flush ，compaction 的影响 也更小，checkpoint 制作时长仅取决于需要持久化到 durable storage 上 的 changelog 数据的多少。 
+
+更友好的资源使用：比较重的 DB 快照操作分散执行，可以避免 cpu使用  率、磁盘 IO 和 网卡流量的尖刺。
+
+**DFS 实现 Changelog 存储的问题** 
+
+Changelog Restore 重复下载文件问题 ：为了避免产生过多小文件，同一 文件中会包含一个 TM 内多个 operator 的 changelog，restore 时这些 operator 会重复下载 changelog 文件，导致 restore 性能差。
+
+小文件问题严重，HDFS NN 压力巨大：以我们一个 4800 并发的作业为 例，默认配置下将会产生 130 万左右个 changelog 文件，单个作业 NN 请 求的 QPS 高达 18000 次/秒左右。 
+
+Changelog 文件写延迟太高，影响 checkpoint 制作速度：还是以我们的 4800 并发的作业为例，写 changelog 文件 P99 延迟在 3秒左右，最大延 迟甚至达到 2 分钟。
+
+
+
+解决 重复下载文件问题：
+
+![image-20230305172656086](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305172656086.png)
+
+**Changelog候选存储对比：**
+
+![image-20230305172737682](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305172737682.png)
+
+**BookKeeper 实现 changelog storage**：
+
+State Changelog 相关组件
+
+![image-20230305172849396](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305172849396.png)
+
+## 10，PyFlink 最新进展解读及典型应用场景介绍｜付典
+
+文档：[付典-PyFlink 最新进展解读及典型应用场景介绍.pdf](‪.\核心技术\【5】付典-PyFlink 最新进展解读及典型应用场景介绍.pdf)
+
+视频：https://www.bilibili.com/video/BV1c8411578K/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+问题：
+
+## 11，Apache Flink 1.16 功能解读｜黄兴勃
+
+文档：[‪黄兴勃-Apache Flink 1.16 功能解读.pdf](‪.‪\核心技术\【1】黄兴勃-Apache Flink 1.16 功能解读.pdf)
+
+视频：https://www.bilibili.com/video/BV1JK411R7ZX/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：[Apache Flink 1.16 功能解读 (qq.com)](https://mp.weixin.qq.com/s?__biz=MzU3Mzg4OTMyNQ==&mid=2247503755&idx=1&sn=2ae04a59736b11e648699eec42328662&chksm=fd3841c9ca4fc8df8b5c71e4723f34ff762f063906c3354d6f9246521be01252cd390cd52f2f&scene=126&sessionid=1678009053#rd)
+
+问题：
+
+## 12，基于 Log 的通用增量 Checkpoint｜俞航翔
+
+文档：[‪俞航翔-基于Log的通用增量Checkpoint .pdf](‪.‪\核心技术\【1】俞航翔-基于Log的通用增量Checkpoint .pdf)
+
+视频：https://www.bilibili.com/video/BV1hD4y1v7Xi/?spm_id_from=pageDriver&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
