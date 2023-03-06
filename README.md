@@ -394,3 +394,97 @@ Local Recovery
 **了解Fault Tolerance2.0：**
 
 ![image-20230305200919076](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230305200919076.png)
+
+
+
+## 13，Flink state 优化以及远程 state 的探索｜张杨
+
+文档：[张杨_Flink_state的优化与remote_state的探索.pdf](.\核心技术\【2】张杨_Flink_state的优化与remote_state的探索.pdf)
+
+视频：https://www.bilibili.com/video/BV1Yv4y1d77u/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+![image-20230306232743251](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230306232743251.png)
+
+**问题：**
+
+业务场景 
+
+• 模型训练，样本拼接 
+
+• key数量庞大，分布稀疏
+
+ • 数据ttl短，小时级
+
+ 缓存失效快反复reload/compaction频繁/cpu消耗高
+
+**优化思考**
+
+![image-20230306232647555](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230306232647555.png)
+
+**State压缩优化**
+
+优化思路 
+
+• 开启partitoned index filter，减少缓存竞争 
+
+• 关闭rocksdb压缩，减少缓存加载/compaction时候的cpu消耗 
+
+• 支持接口层压缩，在数据从state读写前后进行压缩解压缩操作，减 少state大小
+
+![image-20230306232602487](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230306232602487.png)
+
+zstd压缩算法：https://www.baidu.com/link?url=KWYa1OoL8MkJvli46jYQEBGAs4j5M44JjwaeMIagJcgbn-h3wgUTAv4Ajt-Sc5io&wd=&eqid=927fe225000165180000000664060738
+
+
+
+**问题**
+
+离在线混部，降本增效
+
+ • 大state作业重启下载state慢 
+
+• 大state作业rescale加载state慢 
+
+在线业务机器io能力不足/state强依赖load过程
+
+**优化思路**
+
+ • 实现flink state的存算分离
+
+ • State远程化/服务化，重启/rescale直接建立连接进行读写 
+
+• 远程state服务需要支持checkpoint完整功能依赖的接口
+
+**整体架构**
+
+![image-20230306233404234](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230306233404234.png)
+
+**缓存使用**
+
+ • 每次state的操作都要走网络 rpc，cpu消耗太高 • 网络rpc延迟高，任务吞吐低 • cache是一个自然而然的选择
+
+**缓存难点**
+
+写缓存
+
+ • 内存攒批，后台定期/checkpoint刷 出去 
+
+• 上百倍的写rpc减少 读缓存 
+
+==》效果好，达到预期效果
+
+
+
+读缓存
+
+• key较少场景效果明显，命中率极高，效果好
+
+• 稀疏key场景，大量读null，缓存命中率低 
+
+• 周期性业导致缓存定期失效，读null，命中率暴跌 
+
+==》支持key全量缓存配置，有效解决稀疏/缓存失效场 景性能问题，内存使用上升。 
