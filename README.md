@@ -488,3 +488,29 @@ zstd压缩算法：https://www.baidu.com/link?url=KWYa1OoL8MkJvli46jYQEBGAs4j5M4
 • 周期性业导致缓存定期失效，读null，命中率暴跌 
 
 ==》支持key全量缓存配置，有效解决稀疏/缓存失效场 景性能问题，内存使用上升。 
+
+
+
+# 实时风控
+
+
+
+## 1，京东物流实时风控实践｜周文跃
+
+文档：[周文跃-京东物流实时风控实践.pdf](.\实时风控\【3】周文跃-京东物流实时风控实践.pdf)
+
+视频：https://www.bilibili.com/video/BV1bW4y1p7ir/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+## 2，Flink CEP 在抖音电商的业务实践｜张健
+
+文档：[张健-FlinkCEP在抖音电商的业务实践.pdf](.\实时风控\【2】张健-FlinkCEP在抖音电商的业务实践.pdf)
+
+视频：https://www.bilibili.com/video/BV1JM41167Sh/?spm_id_from=pageDriver&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
