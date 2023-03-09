@@ -514,3 +514,72 @@ zstd压缩算法：https://www.baidu.com/link?url=KWYa1OoL8MkJvli46jYQEBGAs4j5M4
 文章：
 
 问题：
+
+## 3，AirWallex基于 Flink 打造实时风控系统｜董大凡
+
+文档：[董大凡Airwallex基于Flink打造实时风控系统.pdf](.\实时风控\【5】董大凡Airwallex基于Flink打造实时风控系统.pdf)
+
+视频：https://www.bilibili.com/video/BV1aK411R72M/?spm_id_from=333.880.my_history.page.click&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+## 4，Flink CEP 新特性进展与在实时风控场景的落地｜耿飙&胡俊涛
+
+文档：[耿飚&胡俊涛-Flink CEP 新特性进展与在实时风控场景的落地.pdf](.\实时风控\【4】耿飚&胡俊涛-Flink CEP 新特性进展与在实时风控场景的落地.pdf)
+
+视频：https://www.bilibili.com/video/BV1Y8411j7Fm/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：[Flink CEP 新特性进展与在实时风控场景的落地 (qq.com)](https://mp.weixin.qq.com/s/tkgQDxffAOwxLb06lqOdtw)
+
+问题：
+
+• [FLINK-27392](https://issues.apache.org/jira/browse/FLINK-27392)：支持在Pattern内的相邻事件之间定义时间窗口 
+
+• [FLINK-26941](https://issues.apache.org/jira/browse/FLINK-26941)：支持在带有窗口的Patten中以notFollowedBy结尾 
+
+• [FLINK-24865](https://issues.apache.org/jira/browse/FLINK-24865)：支持批模式下使用MATCH_RECOGNIZE
+
+• [FLINK-23890](https://issues.apache.org/jira/browse/FLINK-23890)：优化Timer创建策略
+
+
+
+新增接口（[FLIP-200](https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=195730308)）
+
+案例参考：https://help.aliyun.com/document_detail/459880.html
+代码：https://github.com/RealtimeCompute/ververica-cep-demo.git
+
+克隆代码，并且通过依赖可以获取到jar包的source，拷贝进项目查看
+
+```xml
+<dependency>
+    <groupId>com.alibaba.ververica</groupId>
+    <artifactId>flink-cep</artifactId>
+    <version>1.15-vvr-6.0.2-api</version>
+</dependency>
+```
+
+借此再了解一下：https://repo.maven.apache.org/maven2/com/alibaba/ververica/ 这个仓库
+
+https://help.aliyun.com/apsara/enterprise/v_3_14_0_20210519/sc/user-guide/job-development-1.html?spm=a2c4g.14484438.10001.471
+
+![image-20230309221300671](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230309221300671.png)
+
+正好redis一直以来都是使用的 [bahir-flink](https://github.com/apache/bahir-flink) 但是又好久没有更新维护了，所以可以借此机会了解一下阿里是怎么实现的
+
+但是很可惜redis source为空的，所以使用jd-gui反编译，并将class保存为java文件
+
+![image-20230309231143168](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230309231143168.png)
+
+但是所有文件都带有注释
+
+![image-20230309231833478](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230309231833478.png)
+
+然后取消勾选
+
+![image-20230309231854254](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230309231854254.png)
+
+看到一个flink-shaded-force-shading模块
+
+https://blog.csdn.net/weixin_44723515/article/details/128298568
