@@ -583,3 +583,83 @@ https://help.aliyun.com/apsara/enterprise/v_3_14_0_20210519/sc/user-guide/job-de
 看到一个flink-shaded-force-shading模块
 
 https://blog.csdn.net/weixin_44723515/article/details/128298568
+
+## 5，网易游戏实时 HTAP 计费风控平台建设｜林佳
+
+文档：[林佳-网易游戏实时 HTAP 计费风控平台建设.pdf](.\实时风控\【1】林佳-网易游戏实时 HTAP 计费风控平台建设.pdf)
+
+视频：https://www.bilibili.com/video/BV1p24y1y73n/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：[网易游戏实时 HTAP 计费风控平台建设 (qq.com)](https://mp.weixin.qq.com/s/DGsm46huEFDzDqS8aDLSHQ)
+
+问题：
+
+**风控业务会话** 
+
+由一次用户行为所引发的，需要多个系统协作完成、同时触发多个请求、产生跨 越多个服务提供方调用的全过程
+
+**业务会话情况**
+
+多服务、多请求产生的异构结果难以直接关联 
+
+时间跨度大、业务水位不同步 
+
+调用顺序复杂，存在并发、异步的情况 
+
+**业务会话目前问题**
+
+业务会话级的问题定位，极度依赖人工处理和个人经验，重复工作多，容易错判 
+
+这里需要注意的是，业务会话跨越了多个相互独立的请求链路，且没有统一全局的 trace-id 可以被提前置入所有的数据中。
+
+**开源Tracing方案：** 
+
+依赖全局trace-id 
+
+通常需要侵入服务打点 
+
+单次请求链路跟踪
+
+**实时关联的数据结构**
+
+![image-20230316235611042](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230316235611042.png)
+
+**基准** 
+
+需要关注的核心风控数据点 一旦出现就认定存在一个包含它的业务会话
+
+**补充** 
+
+非关键的、辅助判断的风控数据点 依附到相应的基准风控数据中，不单独开启业务会话 有至少一个ID可以和基准数据进行关联
+
+![image-20230316235752775](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230316235752775.png)
+
+**基准的生成(faster)**
+
+![image-20230316235848476](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230316235848476.png)
+
+**补充风控数据点的关联（1.17版本支持）**
+
+当某一条数据来源有延迟的情况下，这笔数据会被丢失，这是 Flink 1.16 正式版之前的情况。在 Flink 1.17 版本中，社区的小伙伴已经把这个代码合并进去了
+
+![image-20230316235924014](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230316235924014.png)
+
+**延迟数据的补回**
+
+![image-20230317000135175](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000135175.png)
+
+**实时风控数据AP（TiDB）**
+
+TiDB KV + TiFlash (HTAP特性)
+
+![image-20230317000232635](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000232635.png)
+
+**实时风控数据AP on TiFlash**
+
+![image-20230317000322559](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000322559.png)
+
+**数据打宽**
+
+![image-20230317000444365](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000444365.png)
+
+![image-20230317000505684](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000505684.png)
