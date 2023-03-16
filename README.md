@@ -663,3 +663,5 @@ TiDB KV + TiFlash (HTAP特性)
 ![image-20230317000444365](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000444365.png)
 
 ![image-20230317000505684](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000505684.png)
+
+# 行业案例
