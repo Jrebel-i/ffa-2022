@@ -665,3 +665,53 @@ TiDB KV + TiFlash (HTAP特性)
 ![image-20230317000505684](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230317000505684.png)
 
 # 行业案例
+
+## 1，Flink 在蔚来自动驾驶AO部门的运用｜林志浩
+
+文档：[林志浩-Flink在蔚来自动驾驶AO部门的运用.pdf](.\行业案例\【3】林志浩-Flink在蔚来自动驾驶AO部门的运用.pdf)
+
+视频：https://www.bilibili.com/video/BV1TG4y1G7pu/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+
+
+## 2，运满满实时计算实践和思考｜欧锐
+
+文档：[欧锐-满帮实时计算实践和思考.pdf](.\行业案例\【1】欧锐-满帮实时计算实践和思考.pdf)
+
+视频：https://www.bilibili.com/video/BV1hR4y1y7XL/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+
+
+## 3，Flink 在平安证券的实践｜张兴
+
+文档：[张兴-FLINK在平安证券的实践.pdf](.\行业案例\【3】张兴-FLINK在平安证券的实践.pdf)
+
+视频：https://www.bilibili.com/video/BV1b24y1y7fS/?spm_id_from=333.999.0.0&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+数据去重应用场景：
+
+1，并发数据，通过固定时间窗口来处理
+
+2，数据时效非常长，主要使用phoenix来解决问题，将数据插入到phonenix，通过维表去关联是否存在这条数据来实现去重
+
+## 4，集度汽车 Flink on native k8s 的应用与实践｜周磊、顾云
+
+文档：[周磊&顾云-集度汽车 Flink on native k8s 的应用与实践.pdf](.\行业案例\【4】周磊&顾云-集度汽车 Flink on native k8s 的应用与实践.pdf)
+
+视频：https://www.bilibili.com/video/BV1Lg411W7Gp/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：![image-20230503141021304](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230503141021304.png)
