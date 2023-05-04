@@ -706,6 +706,8 @@ TiDB KV + TiFlash (HTAP特性)
 
 2，数据时效非常长，主要使用phoenix来解决问题，将数据插入到phonenix，通过维表去关联是否存在这条数据来实现去重
 
+
+
 ## 4，集度汽车 Flink on native k8s 的应用与实践｜周磊、顾云
 
 文档：[周磊&顾云-集度汽车 Flink on native k8s 的应用与实践.pdf](.\行业案例\【4】周磊&顾云-集度汽车 Flink on native k8s 的应用与实践.pdf)
@@ -715,3 +717,27 @@ TiDB KV + TiFlash (HTAP特性)
 文章：
 
 问题：![image-20230503141021304](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230503141021304.png)
+
+
+
+## 5，中信建投证券基于 Flink 的实时计算平台探索与实践｜王若梦、宋宇航
+
+文档：[王若梦、宋宇航-中信建投证券基于Flink的实时计算平台探索与实践.pdf](.\行业案例\【4】王若梦、宋宇航-中信建投证券基于Flink的实时计算平台探索与实践.pdf)
+
+视频：https://www.bilibili.com/video/BV1P8411j774/?spm_id_from=pageDriver&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+
+
+## 6，Apache Flink 在翼支付的应用与实践｜尹春光
+
+文档：[尹春光-ApacheFlink 在翼支付的实践应用.pdf](.\行业案例\【3】尹春光-ApacheFlink 在翼支付的实践应用.pdf)
+
+视频：https://www.bilibili.com/video/BV1VW4y1p7bX/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
