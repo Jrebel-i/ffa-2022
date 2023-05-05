@@ -766,7 +766,202 @@ TiDB KV + TiFlash (HTAP特性)
 
 问题：
 
+- 第一，语义表达和控制能力的建设
 
+  ![image-20230505213101445](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505213101445.png)
+
+问题一：算子并行度和传输方式不可控
+
+![image-20230505213304548](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505213304548.png)
+
+解决方法：
+
+https://nightlies.apache.org/flink/flink-docs-release-1.13/zh/docs/dev/execution/execution_plans/
+
+这个visualizer网站已经失效了，不过flink官方在0.9版本还在，可以将前端代码复制到本地运行，并将相应的js,css,img文件拷贝下来，直接本地运行
+
+https://github.com/apache/flink/blob/release-0.9/flink-dist/src/main/flink-bin/tools/planVisualizer.html
+
+https://github.com/apache/flink/blob/release-0.9/flink-clients/src/main/resources/web-docs/css/pactgraphs.css
+
+这里是修改的streamGraph
+
+```java
+//打印执行计划
+System.out.println(env.getExecutionPlan());
+//通过编辑修改parallelism可以实现并行度的修改
+//甚至可以修改算子之间的连接方式   ship_strategy项
+
+{
+  "nodes" : [ {
+    "id" : 1,
+    "type" : "Source: Custom Source",
+    "pact" : "Data Source",
+    "contents" : "Source: Custom Source",
+    "parallelism" : 1
+  }, {
+    "id" : 2,
+    "type" : "Timestamps/Watermarks",
+    "pact" : "Operator",
+    "contents" : "Timestamps/Watermarks",
+    "parallelism" : 1,
+    "predecessors" : [ {
+      "id" : 1,
+      "ship_strategy" : "FORWARD",
+      "side" : "second"
+    } ]
+  }, {
+    "id" : 4,
+    "type" : "Window(GlobalWindows(), DeltaTrigger, TimeEvictor, ComparableAggregator, PassThroughWindowFunction)",
+    "pact" : "Operator",
+    "contents" : "Window(GlobalWindows(), DeltaTrigger, TimeEvictor, ComparableAggregator, PassThroughWindowFunction)",
+    "parallelism" : 16,
+    "predecessors" : [ {
+      "id" : 2,
+      "ship_strategy" : "HASH",
+      "side" : "second"
+    } ]
+  }, {
+    "id" : 5,
+    "type" : "Sink: Print to Std. Out",
+    "pact" : "Data Sink",
+    "contents" : "Sink: Print to Std. Out",
+    "parallelism" : 16,
+    "predecessors" : [ {
+      "id" : 4,
+      "ship_strategy" : "FORWARD",
+      "side" : "second"
+    } ]
+  } ]
+}
+
+```
+
+
+
+通过修改JobGraph的方式
+
+![image-20230505213336543](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505213336543.png)
+
+问题二：Create View逻辑视图
+
+![image-20230505222604793](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505222604793.png)
+
+解决方法：
+
+其实是在 Apache calcite 语法解析的时候，View 它只是一个逻辑辅助，在这一过程会将其丢弃。那么我们如何让 View 这一信息被底层感知到呢？
+
+主要有两个办法:
+
+办法一是 SQL 解析的时候不丢失 View 信息
+
+办法二是在 RealNode 到 Optimizer Rule 能够识别到 View 的特征信息，这样就可以把 View 当成一个真正的代码去翻译了
+
+
+
+采用了办法二，最终的方案是采用识别特定函数实现，内置了一个 breakpoint 函数。在创建 View 的时候可以同时多 select 一个 breakpoint，这样在底层翻译的时候，就可以把它当成一个真正的 RealNode 处理。
+
+
+
+问题三：状态保存时间
+
+![image-20230505223113259](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505223113259.png)
+
+
+
+解决方法：
+
+​		采用的方案是用 Flink SQL+CDC+Regular Join 的方式来实现。接入还是一样消费 Kafka，通过 CDC 来消费数据库分库分表的数据，最后通过正常的 Regular Join 来实现。
+
+​		这里的 Regular join 底层同时依赖两个 MapState，比如 Topic A 对应 MapState 是 A，MySQL 里的数据库的数据对应的是 B。如果我们能轻易的将 MapState B 的状态设置为 0 或者不过期，那么这个状态的数据就会被永久的保存下来。即使流的数据先到达了，后面状态数据到达也能触发数据的关联，从而比较好的解决这类问题。
+
+​		具体的解决办法是，我们可以在 Flink SQL 中指定左右流 Join 的状态时间，在 Graph 中识别有 Join 的算子，最终透传到 Join 算子做状态时间的设置。
+
+
+
+- 第二，资源调优和弹性能力的建设
+
+  ![image-20230505223316313](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505223316313.png)
+
+  问题一：静态资源调优
+
+  ![image-20230505223857871](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505223857871.png)
+
+​		解决方法：
+
+​		第一个环节，首先进行语法校验，然后通过语法校验及后端生成 Stream Graph，拿到 Stream Graph 的同时我们还会进行 Source/Sink 连通校验和参数初步调整。
+
+​		第二个环节，根据当前的任务逻辑及流量合理的调整资源。首先探测 Source 的流量，然后拿这个值和用户的作业 SQL、Stream Graph 做 Optimizer。		Optimizer 部分主要包括 Restart、HighAvailable、Checkpoint、Parallelism、TaskManager、JobManager、StateBackend。
+
+​		通过不断优化，得到一个比较好的任务资源参数，供用户作为初始任务资源使用。
+
+
+
+​		问题二：动态资源调优及扩缩容
+
+​		解决方法：
+
+​		那么任务上线后是什么情况呢？比如 Flink SQL 正常的 Running，首先将指标采集 Push 到 Kafka，然后会有实时任务进行指标的清洗聚合。针对重要的指标，比如消费延迟指标、算子速率指标、JVM 进程指标，状态大小指标等。
+
+​		这些指标作为动态资源调整服务的入参，能及时感知到当前任务的运行状况，然后动态资源调整会进行需求资源的申请，将任务重启，并给用户发送通知。如果重启失败，会进行配置回滚，然后告知用户调整失败需要手工介入。
+
+​	针对动态资源调整，我们的场景大概有如下四个：
+
+- 设定历史数据追数：Kafka 积压历史数据初次消费、CDC 全量到增量。
+- 期望时间动态调整：特定时间扩缩容，解决活动可预知的流量高峰。
+- 根据指标动态调整：延迟或反压及时调整，预测流量变化提前调整。
+- 异常指标动态调整：例如 JVM GC 频繁，及时调整 TM 内存。
+
+
+
+​		问题三：弹性资源能力的建设
+
+​		引进 Flink Native K8S
+
+
+
+- 第三，指标体系建设
+
+  ![image-20230505224523085](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230505224523085.png)
+
+  
+
+  调度任务依赖，是指 Kafka/MysqlCDC 数据入湖，下游有离线调度依赖，我们需要感知当前任务是否有延迟，Checkpoint 有没有做，数据在数仓里是否具有可见性，还需要保证数据完整入仓入湖后，下游任务才会启动。
+
+  
+
+- 第四，近实时数仓建设
+
+第一个场景，日志场景建设。当数据量大，入仓时间多于 10 分钟的时候，下游任务相应增大，有没有办法缩短入仓时间？当 HDFS 写入流量波动较大的时候，能不能更加平稳，且数据不丢不重？
+
+众所周知，从日志文件通过 Kafka 到 Flink SQL、写入 Iceberg 都有可能产生数据重复，这一链路能保证数据不丢，但较难保证数据不重。
+
+对此我们的方案是基于文件日志采集 MetaData Logs，然后将 MetaData Logs 在下游复用。其中 MetaData Logs 的文件的行数起到很重要的作用，因为这一链路能保证数据不丢。
+
+如果数据的行数等于 MetaData Logs，就代表这个数据没有重复，一旦数据行数多于 MetaData Logs，就代表这个数据有重复了，但我们只需要基于重复的某一个文件日志进行去重处理，而不需要对全量日志文件都进行去重处理。
+
+针对 Iceberg 表我们建立了 Iceberg Manager 来做小文件合并、过期快照清理、孤儿文件清理。
+
+
+
+第二个场景，数据库场景建设。比如数据库是 MySQL，我们想通过 Flink CDC 将数据直接写入 Iceberg V2 表。那么就会有如下几方面的考虑：
+
+- 多个 Flink CDC 任务是否会对一个 MySQL 读取？数据库是否会有压力？已经读取的数据能否复用起来？
+- Flink CDC 增量读取，支持指定读取的时间起点。
+- IcebergV2 全量数据同步时，数据量较大，容易产生了较多 Delete Files，辅助链路的 Iceberg Manager 在进行表级别优化的时候，就会产生较大的压力。
+- Flink CDC 同步任务太麻烦，希望配置化就生成好任务，希望有一键数据入湖的能力。
+
+
+
+一键任务生成。辅助自动任务的调优扩缩容机制，保证 Flink CDC 全量同步和增量同步资源的切换问题，通过 Kafka 来实现对同一个数据源读取时候的压力问题，将数据写入 Kafka，Kafka 的数据会被下游的 Flink SQL 任务自动感知并同步。
+
+为了解决 Delete Files 全量数据过多的问题。我们在进行全量同步的时候，会关闭写入 Iceberg V2 表的 upsert 功能，在增量的时候才会开启，这样就可以保证全量同步的时候数据既不丢也不重。同时，Flink SQL 任务增量数据会写入 Iceberg V1 表，方便下游链路进行复用。
+
+
+
+同时发现应用程序分析和调试工具
+
+https://nightlies.apache.org/flink/flink-docs-release-1.17/docs/ops/debugging/application_profiling/
 
 ## 9，Flink 在中泰证券的实践与应用｜连序全
 
@@ -833,14 +1028,31 @@ cd arthas-bin/
 /usr/lib/flink/bin/flink run -t yarn-per-job examples/streaming/TopSpeedWindowing.jar
 #并记录jobmaster地址
 ip-10-0-23-22.ap-southeast-2.compute.internal:42451
-#要评估Flink Stream Operator关键路径的耗时，您需要连接到正在运行的Flink作业。您可以使用以下命令连接到Flink作业
-./as.sh --target-ip 10.0.23.22 --target-port 42451
+#需要在对应的taskmanager所在的节点上安装arthas
+#比如我需要查看WindowOperator算子的处理速度
+trace org.apache.flink.streaming.runtime.operators.windowing.WindowOperator processElement
+
+#打印如下
+`---ts=2023-05-05 13:14:45;thread_name=Window(GlobalWindows(), DeltaTrigger, TimeEvictor, ComparableAggregator, PassThroughWindowFunction) -> Sink: Print to Std. Out (1/1)#0;id=46;is_daemon=false;priority=5;TCCL=org.apache.flink.runtime.execution.librarycache.FlinkUserCodeClassLoaders$SafetyNetWrapperClassLoader@6ad311fd
+    `---[0.081702ms] org.apache.flink.streaming.runtime.operators.windowing.EvictingWindowOperator:processElement()
+        +---[3.47% 0.002832ms ] org.apache.flink.streaming.runtime.streamrecord.StreamRecord:getValue() #115
+        +---[2.50% 0.002041ms ] org.apache.flink.streaming.runtime.streamrecord.StreamRecord:getTimestamp() #115
+        +---[3.14% 0.002567ms ] org.apache.flink.streaming.api.windowing.assigners.WindowAssigner:assignWindows() #114
+        +---[3.00% 0.002453ms ] org.apache.flink.streaming.runtime.operators.windowing.EvictingWindowOperator:getKeyedStateBackend() #120
+        +---[2.91% 0.002381ms ] org.apache.flink.runtime.state.KeyedStateBackend:getCurrentKey() #120
+        +---[3.40% 0.002776ms ] org.apache.flink.streaming.runtime.operators.windowing.EvictingWindowOperator:isWindowLate() #230
+        +---[2.98% 0.002436ms ] org.apache.flink.runtime.state.internal.InternalListState:setCurrentNamespace() #235
+        +---[3.71% 0.003031ms ] org.apache.flink.runtime.state.internal.InternalListState:add() #236
+        +---[8.68% 0.007091ms ] org.apache.flink.streaming.runtime.operators.windowing.WindowOperator$Context:onElement() #243
+        +---[2.53% 0.002068ms ] org.apache.flink.streaming.api.windowing.triggers.TriggerResult:isFire() #245
+        +---[2.72% 0.002223ms ] org.apache.flink.streaming.api.windowing.triggers.TriggerResult:isPurge() #254
+        `---[3.53% 0.00288ms ] org.apache.flink.streaming.runtime.operators.windowing.EvictingWindowOperator:registerCleanupTimer() #257
 ```
 
 
 
 星环 HDFS：https://www.modb.pro/db/603163
 
-Queryable State ：https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/fault-tolerance/queryable_state/
+Queryable State[Flink新功能] ：https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/fault-tolerance/queryable_state/
 
 https://blog.csdn.net/weixin_45366499/article/details/115442928
