@@ -741,3 +741,106 @@ TiDB KV + TiFlash (HTAP特性)
 文章：
 
 问题：
+
+
+
+## 7，电商 SaaS 全渠道实时数据中台最佳实践｜张成玉&应圣楚
+
+文档：[张成玉、应圣楚｜电商SaaS全渠道实时数据中台最佳实践.pdf](.\行业案例\【2】张成玉、应圣楚｜电商SaaS全渠道实时数据中台最佳实践.pdf)
+
+视频：https://www.bilibili.com/video/BV12v4y1d7h3/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
+
+
+
+## 8，FlinkSQL 在米哈游的平台建设和应用实践｜张剑
+
+文档：[张剑分论坛｜FlinkSQL在米哈游的平台建设和应用实践.pdf](.\行业案例\【2】张剑分论坛｜FlinkSQL在米哈游的平台建设和应用实践.pdf)
+
+视频：https://www.bilibili.com/video/BV1544y1Q7Fs/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：[Flink SQL 在米哈游的平台建设和应用实践(qq.com)](https://mp.weixin.qq.com/s/9OvQ8EoFVDJGbMyHbpkMyg)
+
+问题：
+
+
+
+## 9，Flink 在中泰证券的实践与应用｜连序全
+
+文档：[连序全-Flink在中泰证券的实践与应用.pdf](.\行业案例\【1】连序全-Flink在中泰证券的实践与应用.pdf)
+
+视频：https://www.bilibili.com/video/BV1YY411d7eX/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：[Flink 在中泰证券的实践与应用(qq.com)](https://mp.weixin.qq.com/s/mnuisYIaJD6UW7tnnFdjsg)
+
+问题：
+
+实时数据管道场景说明
+
+1. Kafka 数据通过 Flink SQL 同步到 Kafka，实现不同 Kafka 集群间的消息复制，实现集群读写分离的场景。
+2. 通过 Flink SQL 将日志数据落地到 HDFS，提供给后续审计、数据挖掘等场景使用。
+3. 将监控数据实时写入 TiDB，实现监控运维大屏。
+4. 将客户的流水数据、交易数据写入 Hbase，满足客户实时流水数据的查询。
+
+
+
+性能调优
+
+​	1，通过 Task Manager 节点的 CPU 负载、Flink 的背压状态来定位具体的 Stream Operator。通过 Arthas 评估该 Stream Operator 关键路径的耗时，最终定位到产生性能瓶颈的具体业务逻辑。
+
+​	2，在定位到性能瓶颈点之后，利用 Flink State 存储一些中间状态，避免业务逻辑重复计算。
+
+​	3，在数据输出方面，合理设置 TiDB 的写入参数，最大程度的提升写入效率。
+
+
+
+数据准确性
+
+1. Checkpoint 指定持久化的存储方式，我们选择了星环 HDFS 作为存储底座，保证了任务在发生异常后可以恢复运行。
+2. 作业上线后会根据业务的需求随时更新代码，我们需要设置 RETAIN_ON_CANCELLATION 参数，在任务版本的升级后，仍然可以恢复当前的状态继续运行。
+3. 当上游系统出现异常时，操作 HVR 进行数据回放，保证数据源的可回溯性。同时 Flink 作业按照事件的类型进行幂等处理，保证整体数据的准确性。
+4. 通过 Queryable State 查询作业运行过程中的状态数据，在线排查客户数据的异常问题。
+
+
+
+数据输出优化
+
+​	1，TiDB 输出表开启 TiFlash 功能，TiDB 通过 raft 协议异步复制数据到 TiFlash。
+
+​	2，对于不同的查询场景选择不同的存储引擎，对于单客户的点查场景，通过 SQL Hint 指示使用 TiKV 存储引擎。
+
+​	3，对于聚合统计类的场景，比如我们要查询 Top 100 的客户，通过 SQL Hint 指示使用 TiFlash 列式存储引擎。经过实际观测，在此应用场景下，通过 TiFlash 引擎可以将查询的耗时由分钟级降低至秒级。
+
+
+
+
+
+使用Arthas 评估Flink Stream Operator 关键路径的耗时：
+
+https://arthas.aliyun.com/en/doc/quick-start.html
+
+```bash
+#下载arthas
+wget https://github.com/alibaba/arthas/releases/download/arthas-all-3.6.8/arthas-bin.zip
+unzip arthas-bin.zip -d  arthas-bin/
+cd arthas-bin/
+./as.sh
+
+#启动flink任务
+/usr/lib/flink/bin/flink run -t yarn-per-job examples/streaming/TopSpeedWindowing.jar
+#并记录jobmaster地址
+ip-10-0-23-22.ap-southeast-2.compute.internal:42451
+#要评估Flink Stream Operator关键路径的耗时，您需要连接到正在运行的Flink作业。您可以使用以下命令连接到Flink作业
+./as.sh --target-ip 10.0.23.22 --target-port 42451
+```
+
+
+
+星环 HDFS：https://www.modb.pro/db/603163
+
+Queryable State ：https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/fault-tolerance/queryable_state/
+
+https://blog.csdn.net/weixin_45366499/article/details/115442928
