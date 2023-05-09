@@ -1088,5 +1088,24 @@ Queryable State[Flink新功能] ：https://nightlies.apache.org/flink/flink-docs
 
 https://blog.csdn.net/weixin_45366499/article/details/115442928
 
+## 10，Flink 在新能源场站运维的应用｜姚远
+
+文档：[姚远-Flink在新能源场站运维的应用.pdf](.\行业案例\【4】姚远-Flink在新能源场站运维的应用.pdf)
+
+视频：https://www.bilibili.com/video/BV1eD4y1v75q/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
 
 
+
+## 11，菜鸟供应链实时数仓最佳实践｜张庭
+
+文档：[张庭-菜鸟供应链实时数仓最佳实践.pdf](.\行业案例\【1】张庭-菜鸟供应链实时数仓最佳实践.pdf)
+
+视频：https://www.bilibili.com/video/BV17K411R7rd/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
+
+文章：
+
+问题：
