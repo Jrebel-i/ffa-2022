@@ -580,6 +580,37 @@ https://help.aliyun.com/apsara/enterprise/v_3_14_0_20210519/sc/user-guide/job-de
 
 ![image-20230309231854254](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230309231854254.png)
 
+
+
+使用fernflower测试一下
+
+~~~shell
+wget https://services.gradle.org/distributions/gradle-8.1-rc-3-bin.zip
+unzip -d gradle/ gradle-8.1-rc-3-bin.zip
+
+git clone https://github.com/fesh0r/fernflower.git
+cd fernflower
+
+/home/hadoop/gradle/gradle-8.1-rc-3/bin/gradle build -Dorg.gradle.java.home='/usr/lib/jvm/java-17'
+ll fernflower/build/libs
+
+#测试反编译node-provisioner-2.46.0.jar
+cp /usr/share/aws/emr/node-provisioner/lib/node-provisioner-2.46.0.jar .
+
+mkdir node-provisioner
+/usr/lib/jvm/java-17/bin/java -jar fernflower/build/libs/fernflower.jar node-provisioner-2.46.0.jar node-provisioner/
+
+#测试反编译ververica-connector-redis-1.15-vvr-6.0.6.jar
+https://repo.maven.apache.org/maven2/com/alibaba/ververica/ververica-connector-redis/1.15-vvr-6.0.6/
+
+mkdir ververica-connector-redis
+/usr/lib/jvm/java-17/bin/java -jar fernflower/build/libs/fernflower.jar ververica-connector-redis-1.15-vvr-6.0.6.jar ververica-connector-redis/
+~~~
+
+
+
+
+
 看到一个flink-shaded-force-shading模块
 
 https://blog.csdn.net/weixin_44723515/article/details/128298568
@@ -684,7 +715,7 @@ TiDB KV + TiFlash (HTAP特性)
 
 视频：https://www.bilibili.com/video/BV1hR4y1y7XL/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
 
-文章：
+文章：[运满满实时计算实践和思考(qq.com)](https://mp.weixin.qq.com/s/BBU0XyCcf2bqEj21YkS3_g)
 
 问题：
 
@@ -714,7 +745,7 @@ TiDB KV + TiFlash (HTAP特性)
 
 视频：https://www.bilibili.com/video/BV1Lg411W7Gp/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
 
-文章：
+文章：[集度汽车 Flink on native k8s 的应用与实践(qq.com)](https://mp.weixin.qq.com/s/Ywxw6Jt9D4Rh4sXD1yirNQ)
 
 问题：![image-20230503141021304](https://jrebe-note-pic.oss-cn-shenzhen.aliyuncs.com/img/image-20230503141021304.png)
 
@@ -750,7 +781,7 @@ TiDB KV + TiFlash (HTAP特性)
 
 视频：https://www.bilibili.com/video/BV12v4y1d7h3/?spm_id_from=333.788&vd_source=1435dbab789f2dad584fcf275be722e4
 
-文章：
+文章：[电商 SaaS 全渠道实时数据中台最佳实践(qq.com)](https://mp.weixin.qq.com/s/T5R-JWBJfBOBAtkRbco1fA)
 
 问题：
 
@@ -1056,3 +1087,6 @@ trace org.apache.flink.streaming.runtime.operators.windowing.WindowOperator proc
 Queryable State[Flink新功能] ：https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/fault-tolerance/queryable_state/
 
 https://blog.csdn.net/weixin_45366499/article/details/115442928
+
+
+
